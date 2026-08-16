@@ -5,14 +5,16 @@ A collection of automation workflows I've built with [n8n](https://n8n.io) — r
 ## Projects
 
 | Project | Description | Key Tools/Integrations |
-|---|---|---|
-| [AMDAL Document Generator](./amdal-document-generator) | Auto-generates environmental impact assessment (AMDAL) document narratives from a form submission, using an LLM to write formal sections, then fills a Google Docs template automatically. | Form Trigger, LLM Chain (OpenRouter/Claude), Google Drive, Google Docs |
+| --- | --- | --- |
+| [AMDAL Document Generator](https://github.com/PujaBasyarah/n8n-workflows/blob/main/amdal-document-generator) | Auto-generates environmental impact assessment (AMDAL) document narratives from a form submission, using an LLM to write formal sections, then fills a Google Docs template automatically. | Form Trigger, LLM Chain (OpenRouter/Claude), Google Drive, Google Docs |
+| [Customer Support Agent](https://github.com/PujaBasyarah/n8n-workflows/blob/main/customer-support-agent) | Scrapes a business website's sitemap, builds a structured knowledge-base "encyclopedia" using an LLM, and powers an AI support agent that answers customer questions from it. Tested via n8n's Chat Trigger; ready to connect to WhatsApp, Telegram, or other channels. | Form Trigger, HTTP Request/XML/Code (scraping), LLM Chain (OpenRouter), Chat Trigger |
 
 *(More projects coming soon.)*
 
 ## About
 
 I build practical automations that connect forms, AI models, and document/data tools to remove manual work. Each project folder contains:
+
 - The exported workflow JSON (credentials scrubbed — see note below)
 - A screenshot of the workflow canvas
 - A written explanation of the problem it solves and how it works
