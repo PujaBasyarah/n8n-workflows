@@ -1,1 +1,687 @@
-
+{
+  "name": "Customer support Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "SOP Builder",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Website",
+              "placeholder": "https://recap.aitools.inc",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        20,
+        180
+      ],
+      "id": "56f66270-771c-4427-a9a2-fbd34888d1a7",
+      "name": "form_trigger",
+      "webhookId": "11057270-a4bb-40e4-842c-6947806208c7"
+    },
+    {
+      "parameters": {
+        "content": "## Business Encyclopedia Builder\n1. Takes in the url of a business's website \n2. Scans and scrapes the website for important information\n3. Generates a business encyclopedia to be used by the agent",
+        "height": 624,
+        "width": 1504,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "cf16bd47-99ef-48f6-99c1-42e4aa15f6f6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "links",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        180
+      ],
+      "id": "65466f07-25b5-49e2-a5ae-dca93335abe0",
+      "name": "split_urls"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        720,
+        420
+      ],
+      "id": "3d015be1-dca0-4b12-8188-72b795f2e119",
+      "name": "aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0977e7a9-8c0c-4f8d-9749-fda01e8f1b1a",
+              "name": "scraped_website_result",
+              "value": "=Website: {{ $('form_trigger').item.json.Website }}\n\n-----\n{{ $json.data.map(item => {\n  let result = '';\n  result += 'Page Title: ' + item.metadata.title + '\\n';\n  result += 'Page Description: ' + item.metadata.description + '\\n';\n  result += 'Page Url: ' + item.metadata.url + '\\n\\n';\n\n  result += item.markdown;\n\n  return result;\n}).join(\"\\n-----\\n\") }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        420
+      ],
+      "id": "40e29941-98cd-4922-851e-159c886467b3",
+      "name": "set_scraped_content"
+    },
+    {
+      "parameters": {
+        "content": "## Customer Support Agent\n",
+        "height": 512,
+        "width": 1504
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        640
+      ],
+      "typeVersion": 1,
+      "id": "40890cd2-1210-4a6d-a255-cb717d9899ab",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "111b5700-aaf0-4cfc-863f-7d118cec3cd2",
+              "leftValue": "={{ $json.links }}",
+              "rightValue": "gallery",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "d31979d1-909c-4c8d-8f46-bf9c3279520c",
+              "leftValue": "={{ $json.links }}",
+              "rightValue": "media",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "e89e81bb-7f3c-4ace-bc04-60733d87bfae",
+              "leftValue": "={{ $json.links }}",
+              "rightValue": "uploads",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        60,
+        420
+      ],
+      "id": "5afedf4c-d394-4cfd-9289-47339e6fd69f",
+      "name": "exclude_media"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "50433c99-5224-434d-976e-4d8f0cb8e18a",
+              "leftValue": "={{ $json.markdown }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        420
+      ],
+      "id": "492bb335-43b2-4206-909d-c31aa445be3e",
+      "name": "filter_errors"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c24bf7c6-6ff5-4fdf-af07-34de93178c1f",
+              "name": "result",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1320,
+        420
+      ],
+      "id": "5fcf051d-852e-4daf-b9ac-bfbe4d476c18",
+      "name": "set_encyclopedia_result"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# ROLE\nYou are an information architect and technical writer. Your mission is to synthesize a complete set of **hotel** website pages (provided as Markdown) into a **comprehensive, deduplicated Support Encyclopedia**. This encyclopedia will be the single source of truth for future guest-support and automation agents. You must preserve **all unique information** from the source pages, while structuring it logically for fast retrieval.\n\n---\n\n# PRIME DIRECTIVES\n1.  **Information Integrity (Non-Negotiable):** All unique facts, policies, numbers, names, hours, and other key details from the source pages must be captured and placed in the appropriate encyclopedia section. Redundant information (e.g., the same phone number on 10 different pages) should be captured once, with all its original source pages cited for traceability.\n2.  **Organized for Hotel Support:** The primary output is the organized layer (Taxonomy, FAQs, etc.). This is not just an index; it is the encyclopedia itself. It should be structured to answer an agent's questions directly and efficiently.\n3.  **No Hallucinations:** Do not invent or infer details (e.g., prices, hours, policies) not present in the source text. If information is genuinely missing or unclear, explicitly state `UNKNOWN`.\n4.  **Deterministic Structure:** Follow the exact output format specified below. Use stable, predictable IDs and anchors for all entries.\n5.  **Source Traceability:** Every piece of information in the encyclopedia must cite the `page_id`(s) it was derived from. Conversely, all substantive information from every source page must be integrated into the encyclopedia; nothing should be dropped.\n6.  **Language:** Keep the original language of the source text when quoting verbatim policies or names. The organizing layer (summaries, labels) should use the site’s primary language.\n\n---\n\n# INPUT FORMAT\nYou will receive one batch with all pages of a single hotel site. **This is the only input; there is no other metadata.**\n\n<<<PAGES\n{{ $json.scraped_website_result }}\n>>>\n\n**Stable Page IDs:** Generate `page_id` as a deterministic kebab-case slug of `title`:\n- Lowercase; ASCII alphanumerics and hyphens; spaces → hyphens; strip punctuation.\n- If duplicates occur, append `-2`, `-3`, … in order of appearance.\n\n---\n\n# OUTPUT FORMAT (Markdown)\n\nYour entire response must be a single Markdown document in the following exact structure. **There is no appendix or full-text archive; the encyclopedia itself is the complete output.**\n\n## 1) YAML Frontmatter\n\n---\nencyclopedia_version: 1.1 # Version reflects new synthesis model\ngenerated_at: <ISO-8601 timestamp (UTC)>\nsite:\n  name: \"UNKNOWN\"                  # set to hotel name if clearly inferable from sources; else UNKNOWN\ncounts:\n  total_pages_processed: <integer>\n  total_entries: <integer>         # encyclopedia entries you create\n  total_glossary_terms: <integer>\n  total_media_links: <integer>     # image/file/link targets found\nintegrity:\n  information_synthesis_method: \"deduplicated_canonical\"\n  all_pages_processed: true        # set false only if you could not process a page\n---\n\n## 2) Title\n\n# <Hotel Name or UNKNOWN> — Support Encyclopedia\n\n## 3) Table of Contents\nLinked outline to all major sections and subsections.\n\n## 4) Quick Start for Agents (Orientation Layer)\n- **What this is:** 2–4 bullets explaining that this is a complete, searchable knowledge base built from the hotel website.\n- **How to navigate:** 3–6 bullets (e.g., “Use the Taxonomy to find policies. Use the search function for specific keywords like 'pet fee'.\").\n- **Support maturity:** If present, summarize known channels/hours/SLAs. If unknown, write `UNKNOWN`.\n\n## 5) Taxonomy & Topics (The Core Encyclopedia)\nOrganize all synthesized information into these **hospitality categories**. Omit empty categories. Within each category, create **entries** that contain the canonical, deduplicated information.\n\n**Categories (use this order):**\n1. Property Overview & Brand  \n2. Rooms & Suites (types, amenities, occupancy, accessibility notes)  \n3. Rates, Packages & Promotions  \n4. Reservations & Booking Policies (channels, guarantees, deposits, preauthorizations, incidentals)  \n5. Check-In / Check-Out & Front Desk (times, ID/age, early/late options, holds)  \n6. Guest Services & Amenities (concierge, housekeeping, laundry, luggage storage)  \n7. Dining, Bars & Room Service (outlets, menus, hours, breakfast details)  \n8. Spa, Pool, Fitness & Recreation (rules, reservations, hours)  \n9. Wi-Fi & In-Room Technology (TV/casting, devices, outages)  \n10. Parking, Transportation & Directions (valet/self-park, EV charging, shuttles)  \n11. Meetings, Events & Weddings (spaces, capacities, floor plans, AV, catering)  \n12. Accessibility (ADA features, requests, accessible routes/rooms)  \n13. Safety, Security & Emergencies (procedures, contacts)  \n14. Policies (smoking, pets, noise, damage, lost & found, packages)  \n15. Billing, Taxes & Receipts (payment methods, folios, incidentals)  \n16. Cancellations, No-Shows & Refunds  \n17. Loyalty & Partnerships (earning, redemption, elite benefits)  \n18. Sustainability & House Rules  \n19. Local Area & Attractions (concierge picks, distances)  \n20. Contact, Hours & Support Channels  \n21. Miscellaneous / Unclassified (minimize)\n\n**Entry format (for every entry):**\n\n### [EntryID: <kebab-case-stable-id>] <Entry Title>\n**Category:** <one of the categories above>\n**Summary:** <2–6 sentences summarizing the topic. This is a high-level orientation for the agent.>\n**Key Facts:**\n- <short, atomic, deduplicated fact (e.g., \"Check-in time: 4:00 PM\")>\n- <short, atomic, deduplicated fact (e.g., \"Pet fee: $75 per stay\")>\n- ...\n**Canonical Details & Policies:**\n<This section holds longer, verbatim text that cannot be broken down into key facts. Examples: full cancellation policy text, detailed amenity descriptions, legal disclaimers. If a policy is identical across multiple sources, present it here once. Use Markdown formatting like lists and bolding for readability.>\n**Procedures (if any):**\n1) <step>\n2) <step>\n**Known Issues / Contradictions (if any):** <Note any conflicting information found across pages, citing sources. E.g., \"Homepage lists pool hours as 9 AM-9 PM, but Amenities page says 10 PM. [home, amenities]\"> or `None`.\n**Sources:** [<page_id-1>, <page_id-2>, ...]\n\n## 6) FAQs (If Present in Sources)\nAggregate explicit Q→A pairs. Keep answers concise and reference their sources.\n\n#### Q: <verbatim question or minimally edited>\nA: <brief, synthesized answer>\n**Sources:** [<page_id-1>, <page_id-2>, ...]\n\n## 7) Glossary (If Present)\nAlphabetical list of terms defined in sources.\n\n- **<Term>** — <definition as stated in the source; if multiple, synthesize or note variants>\n  **Sources:** [<page_id-1>, ...]\n\n## 8) Outlets, Venues & Amenities Index\n\n| Type        | Name                      | Brief Description (from source) | Sources   |\n|-------------|---------------------------|----------------------------------|-----------|\n| Restaurant  | ...                       | ...                              | [page-id] |\n| Bar         | ...                       | ...                              | [page-id] |\n| Venue       | ...                       | ...                              | [page-id] |\n| Amenity     | ...                       | ...                              | [page-id] |\n\n## 9) Contact & Support Channels (If Present)\nList all official channels (emails, phones, etc.) exactly as stated. Since this info is often repeated, this section should present one canonical, deduplicated list.\n- **Phone (Reservations):** 1-800-555-1234 (Sources: [home, contact, reservations])\n- **Email (General Inquiries):** info@hotel.com (Sources: [contact])\n- **Hours:** ...\n\n## 10) Coverage & Integrity Report\n- **Pages Processed:** `<N>`\n- **Entries Created:** `<M>`\n- **Potentially Unprocessed Content:** List any pages or major sections of pages whose content you could not confidently place into an entry. Explain why (e.g., \"Content on `page-id: gallery` was purely images with no text to process.\"). Should be `None` in most cases.\n- **Identified Contradictions:** Summarize any major conflicting policies or facts discovered during synthesis (e.g., \"Pet policy contradicts itself between FAQ and Policies page.\").\n\n---\n\n# CONTENT SYNTHESIS & FORMATTING RULES\n- **Deduplication:** Your primary goal is to identify and merge identical pieces of information. A phone number or policy listed on 5 pages should appear only once in the final encyclopedia, with all 5 pages cited as sources.\n- **Conflict Resolution:** When sources contain conflicting information (e.g., different check-out times), do not choose one. Present both versions and flag the contradiction in the `Known Issues / Contradictions` field of the relevant entry and in the main `Coverage & Integrity Report`.\n- **Formatting:** You are free to clean up formatting. Normalize headings, standardize lists (bullets/numbers), and convert data into readable Markdown tables. Retain all original text from list items, table cells, and captions.\n- **Links & Media:** Keep link text inline. You do not need to preserve the URL targets unless they are for external resources or downloadable files (like menus), in which case list them. Include image alt text/captions as `Image: <alt text>`.\n\n---\n\n# QUALITY CHECKS (Perform before finalizing)\n1.  **Completeness:** Have you processed all input pages? (`total_pages_processed` in YAML should match input).\n2.  **Information Integrity:** Have you reviewed each source page to ensure all unique facts, numbers, policies, and details have been captured somewhere in the encyclopedia (Sections 5-9)?\n3.  **Traceability:** Does every entry and key piece of data have a `Sources` list citing the original `page_id`(s)?\n4.  **Contradiction Flagging:** Have all discovered contradictions been noted in the appropriate entries and summarized in the final report?\n5.  **No Fabrication:** Confirm that all information is derived from the source text and that any missing data is marked `UNKNOWN`.\n\n---\n\n# NOW DO THE WORK\nUsing the provided `PAGES` (title, description, markdown), produce the hotel Support Encyclopedia exactly as specified above.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1000,
+        420
+      ],
+      "id": "13ae0697-5e65-4ef3-9d9f-541b1a1ccc03",
+      "name": "build_encyclopedia"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.sitemapUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        180
+      ],
+      "id": "ea26d1a1-5a54-45c1-a300-de207cebd227",
+      "name": "fetch_sitemap"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        520,
+        180
+      ],
+      "id": "12c006a8-a5f8-49d3-9c5f-a77b5b08b13f",
+      "name": "parse_sitemap"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst urls = [];\n\nfor (const item of items) {\n  const urlset = item.json.urlset;\n  if (urlset && urlset.url) {\n    const entries = Array.isArray(urlset.url) ? urlset.url : [urlset.url];\n    for (const entry of entries) {\n      if (entry.loc) urls.push(entry.loc);\n    }\n  }\n}\n\nreturn [{ json: { links: urls } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        180
+      ],
+      "id": "aea5e7fe-e011-4e53-aac8-1ba8ac261d17",
+      "name": "format_urls"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.links }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        420
+      ],
+      "id": "fd765f9c-1a39-4619-bb8c-acc9e0b35389",
+      "name": "fetch_page_html",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n  const html = item.json.data || item.json.body || '';\n  const url = (item.json.headers && item.json.headers['x-request-url']) || item.json.url || '';\n\n  let title = '';\n  let description = '';\n  let text = '';\n\n  try {\n    const titleMatch = html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i);\n    title = titleMatch ? titleMatch[1].trim() : '';\n\n    const descMatch = html.match(/<meta[^>]+name=[\"']description[\"'][^>]+content=[\"']([^\"']*)[\"']/i);\n    description = descMatch ? descMatch[1].trim() : '';\n\n    let body = html;\n    body = body.replace(/<script[\\s\\S]*?<\\/script>/gi, ' ');\n    body = body.replace(/<style[\\s\\S]*?<\\/style>/gi, ' ');\n    body = body.replace(/<nav[\\s\\S]*?<\\/nav>/gi, ' ');\n    body = body.replace(/<footer[\\s\\S]*?<\\/footer>/gi, ' ');\n    body = body.replace(/<!--[\\s\\S]*?-->/g, ' ');\n    body = body.replace(/<[^>]+>/g, ' ');\n    body = body.replace(/&nbsp;/g, ' ');\n    body = body.replace(/&amp;/g, '&');\n    body = body.replace(/&quot;/g, '\"');\n    body = body.replace(/&#39;/g, \"'\");\n    text = body.replace(/\\s+/g, ' ').trim();\n  } catch (e) {\n    text = '';\n  }\n\n  results.push({\n    json: {\n      metadata: { title, description, url },\n      markdown: text\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        420
+      ],
+      "id": "38626248-fb51-4c1d-934b-640f097d6120",
+      "name": "extract_page_text"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        560,
+        940
+      ],
+      "id": "24e0b051-b4b8-4ed0-9380-98862a6ca690",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "inkAer4EMjhRZuGF",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        780,
+        940
+      ],
+      "id": "606b9fae-90c4-4361-9259-e44e802f1a61",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst sitemapIndex = item.sitemapindex;\nlet locs = [];\n\nif (sitemapIndex && sitemapIndex.sitemap) {\n  const entries = Array.isArray(sitemapIndex.sitemap) ? sitemapIndex.sitemap : [sitemapIndex.sitemap];\n  // Only follow the sitemap that covers actual site pages, skip posts/categories/authors/qr\n  const pageSitemap = entries.find(e => e.loc.includes('page-sitemap'));\n  if (pageSitemap) {\n    locs = [{ json: { nestedSitemapUrl: pageSitemap.loc } }];\n  } else {\n    // fallback: if no page-sitemap found, just take the first one\n    locs = [{ json: { nestedSitemapUrl: entries[0].loc } }];\n  }\n}\n\nreturn locs;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        180
+      ],
+      "id": "e1a73e6f-9e9d-42c5-b5b3-9bdd8fee4e1d",
+      "name": "get_nested_sitemap_url"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.nestedSitemapUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        180
+      ],
+      "id": "a655771b-acf0-4fa8-bfe8-6c9b4b0c0856",
+      "name": "fetch_nested_sitemap"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        180
+      ],
+      "id": "8b19a3b5-17a7-4b7b-bd8e-66663806340d",
+      "name": "parse_nested_sitemap"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9fe28145-f93c-48c8-abb4-f931a42e604a",
+              "name": "=sitemapUrl",
+              "value": "={{ $json.Website.split('/').slice(0,3).join('/') }}/sitemap.xml",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        180,
+        180
+      ],
+      "id": "24e88f4a-836c-4bbf-bbd1-cf57b0bffc97",
+      "name": "compute_sitemap_url"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        760
+      ],
+      "id": "90d08338-73e1-4133-936c-deb87b40403f",
+      "name": "When chat message received",
+      "webhookId": "96033de5-9459-4a1a-b933-7f2a0cd41b6b"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        680,
+        940
+      ],
+      "id": "abc45600-306e-49ec-a69b-29e7cae6e475",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant Use the following information to answer guest questions accurately. [\n  {\n    \"result\": \"---\\nencyclopedia_version: 1.1\\ngenerated_at: 2024-06-19T00:00:00Z\\nsite:\\n  name: \\\"John & Will Hotel Bremen\\\"\\ncounts:\\n  total_pages_processed: 27\\n  total_entries: 60\\n  total_glossary_terms: 0\\n  total_media_links: 0\\nintegrity:\\n  information_synthesis_method: \\\"deduplicated_canonical\\\"\\n  all_pages_processed: true\\n---\\n\\n# John & Will Hotel Bremen — Support Encyclopedia\\n\\n## Table of Contents\\n1. [Property Overview & Brand](#entryid-property-overview-brand)\\n2. [Rooms & Suites](#entryid-rooms-suites)\\n    - [Lütt Stuuv](#entryid-luett-stuuv)\\n    - [Grode Stuuv](#entryid-grode-stuuv)\\n    - [Best Stuuv](#entryid-best-stuuv)\\n    - [Toorn Stuuv](#entryid-toorn-stuuv)\\n    - [Dubbelt Stuuv](#entryid-dubbelt-stuuv)\\n3. [Rates, Packages & Promotions](#entryid-rates-packages-promotions)\\n4. [Reservations & Booking Policies](#entryid-reservations-booking-policies)\\n5. [Check-In / Check-Out & Front Desk](#entryid-check-in-check-out-front-desk)\\n6. [Guest Services & Amenities](#entryid-guest-services-amenities)\\n7. [Dining, Bars & Room Service](#entryid-dining-bars-room-service)\\n8. [Spa, Pool, Fitness & Recreation](#entryid-spa-pool-fitness-recreation)\\n9. [Wi-Fi & In-Room Technology](#entryid-wi-fi-in-room-technology)\\n10. [Parking, Transportation & Directions](#entryid-parking-transportation-directions)\\n11. [Meetings, Events & Weddings](#entryid-meetings-events-weddings)\\n12. [Accessibility](#entryid-accessibility)\\n13. [Safety, Security & Emergencies](#entryid-safety-security-emergencies)\\n14. [Policies](#entryid-policies)\\n15. [Billing, Taxes & Receipts](#entryid-billing-taxes-receipts)\\n16. [Cancellations, No-Shows & Refunds](#entryid-cancellations-no-shows-refunds)\\n17. [Loyalty & Partnerships](#entryid-loyalty-partnerships)\\n18. [Sustainability & House Rules](#entryid-sustainability-house-rules)\\n19. [Local Area & Attractions](#entryid-local-area-attractions)\\n20. [Contact, Hours & Support Channels](#entryid-contact-hours-support-channels)\\n21. [Miscellaneous / Unclassified](#entryid-miscellaneous-unclassified)\\n\\n## Quick Start for Agents (Orientation Layer)\\n- **What this is:** This encyclopedia is a complete, deduplicated, and searchable knowledge base built from the official John & Will Hotel Bremen website content, covering all guest-support relevant topics.\\n- **How to navigate:** Use the taxonomy and indexed entries to find detailed policies and descriptions of rooms, services, events, and sustainability practices. Search keywords like \\\"pet fee,\\\" \\\"check-in,\\\" or \\\"barception\\\" to quickly locate information. Check the Contact section for canonical phone numbers and email addresses.\\n- **Support maturity:** The hotel offers 24/7 Barception service, including check-in, drinks, and assistance. Phone and email contacts are provided for various inquiries. Specific support hours beyond Barception opening are UNKNOWN.\\n\\n---\\n\\n## 5) Taxonomy & Topics (The Core Encyclopedia)\\n\\n### [entryid-property-overview-brand] Property Overview & Brand\\n**Category:** Property Overview & Brand  \\n**Summary:** John & Will Hotel Bremen is a sustainable design hotel located on the Weser river in Bremen, Germany, housed in a former grain silo complex. It features unique round and half-round rooms with Weser and city views, emphasizing eco-friendly operation and local connectivity. The hotel opened to guests in August 2024 and integrates the surrounding revitalized Überseeinsel district.  \\n**Key Facts:**\\n- Located at Auf der Muggenburg 50, 28217 Bremen.\\n- Opened August 2024.\\n- Part of the Danish sustainable hotel chain Guldsmeden.\\n- GreenSign certified for ecological, economic, and social sustainability.\\n- Building was a grain silo (formerly Kellogg’s production site).\\n- Offers round and semi-round rooms carved into silo pipes.\\n- Features a 24/7 open Barception and a sustainable gym.\\n- Embedded in Überseeinsel, a new urban quarter focusing on green and low-impact living.\\n- Energy concept uses Weser river water and renewable energy for heating/cooling.\\n- Nearby amenities include organic café & restaurant Vitaminlager, Italian eateries, and local brewery Hopfenfänger.\\n**Canonical Details & Policies:**\\nThe hotel combines historical building preservation with modern, sustainable hospitality practices. It focuses on long-term durability of materials, regional sourcing, and optimized energy usage reducing environmental impact. The hotel’s GreenSign certification confirms compliance with mandatory sustainability criteria.\\n\\n**Sources:** [john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser, john-will-silo-hotel-bremen-nachhaltigkeit, john-will-hotel-auf-der-ueberseeinsel-bremen-neu-erleben, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer]\\n\\n---\\n\\n### [entryid-rooms-suites] Rooms & Suites\\n**Category:** Rooms & Suites  \\n**Summary:** John & Will offers uniquely designed round and half-round rooms within converted grain silos, each styled with sustainable and organic materials. Room types vary in size and occupancy, designed for comfort, eco-friendliness, and Weser views. An exclusive suite with rooftop access is also available.  \\n**Key Facts:**\\n- No televisions to save energy; highspeed Wi-Fi provided.\\n- Free reusable water bottles; no minibars to reduce energy consumption.\\n- Organic Eco Essentials in-room products.\\n- All rooms non-smoking.\\n- Some rooms allow additional beds or family configurations.\\n**Known Issues / Contradictions:** None.\\n\\n#### [entryid-luett-stuuv] Lütt Stuuv\\n**Category:** Rooms & Suites  \\n**Summary:** Smallest room type (18 m²), occupying half a silo-circle. Equipped with a 160 cm double bed plus optional pull-out bed for a third person up to 75 kg. Features seating by the window, private bathroom, and sustainable fittings. Located in north-west silo tubes with side views of Weser.  \\n**Key Facts:**\\n- 18 m² size.\\n- Occupancy 2–3 persons.\\n- Bed width: 160 cm.\\n- Non-smoking.\\n- Highspeed WLAN.\\n- Safe and hairdryer provided.\\n- Wall panels with eco-friendly heating/cooling.\\n- Product brand: Eco Essentials.\\n- No minibar or TV.\\n- Free water bottles available at Barception.\\n**Sources:** [luett-stuuv-silo-zimmer-john-will-hotel-bremen, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer]\\n\\n#### [entryid-grode-stuuv] Grode Stuuv\\n**Category:** Rooms & Suites  \\n**Summary:** Full silo-circle room (24 m²) with 200 cm wide bed, seating area with window bench, bathroom, and ample space. Positioned on the south-east side with views of city and Weser. Suitable for 2 adults, optional extra bed for 3 persons.  \\n**Key Facts:**\\n- 24 m² room size.\\n- Occupancy 2 persons (possible 3 with extra bed).\\n- Bed width: 200 cm.\\n- Non-smoking.\\n- Highspeed WLAN.\\n- Sustainable fixtures and Eco Essentials products.\\n- No minibar or TV.\\n- Free water bottles at Barception.\\n**Sources:** [grode-stuuv-rundes-hotelzimmer-silo-hotel-bremen, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer]\\n\\n#### [entryid-best-stuuv] Best Stuuv\\n**Category:** Rooms & Suites  \\n**Summary:** Larger round design room with 30 m² living space plus adjoining bathroom. Includes two-meter double bed, seating area, and extended window bench with Weser view. Suitable for work, relaxation, or light exercise.  \\n**Key Facts:**\\n- 30 m² size.\\n- Occupancy 2 persons.\\n- Bed width: 200 cm.\\n- Non-smoking.\\n- Highspeed WLAN.\\n- Eco Essentials toiletries.\\n- No TV or minibar.\\n- Free water bottles from Barception.\\n**Sources:** [best-stuuv-grosszuegiges-design-zimmer-silo-hotel-bremen, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer]\\n\\n#### [entryid-toorn-stuuv] Toorn Stuuv\\n**Category:** Rooms & Suites  \\n**Summary:** Exclusive suite (45 m²) positioned on the 12th floor with terrace, bath in the room, and eco-friendly fireplace. Features a 2-meter double bed, private accessible terrace, high-end sustainable details, and panoramic views above Bremen.  \\n**Key Facts:**\\n- 45 m² size.\\n- Occupancy 2 persons.\\n- Bed width: 200 cm.\\n- Non-smoking.\\n- Roof terrace with wind-protection considerations.\\n- Includes eco-friendly water-powered fireplace.\\n- Eco Essentials bathroom products.\\n- No TV or minibar.\\n- Free water bottles and 24/7 Barception access.\\n**Sources:** [toorn-stuuv-exklusive-suite-mit-dachterrasse-silo-hotel-bremen, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer]\\n\\n#### [entryid-dubbelt-stuuv] Dubbelt Stuuv\\n**Category:** Rooms & Suites  \\n**Summary:** Two adjacent Lütt Stuuv rooms (2 x 18 m²), ideal for families or groups up to 4 people. Rooms are side-by-side but not connected by door, accessible easily via corridor.  \\n**Key Facts:**\\n- 36 m² total (2 x 18 m²).\\n- Occupancy 4 persons.\\n- Each room has a 160 cm double bed, optional pull-out bed.\\n- Non-smoking.\\n- Highspeed WLAN and Eco Essentials.\\n- No TV or minibar.\\n- Free water bottles at Barception.\\n**Sources:** [john-will-hotel-de-dubbelt-stuuv]\\n\\n---\\n\\n### [entryid-rates-packages-promotions] Rates, Packages & Promotions\\n**Category:** Rates, Packages & Promotions  \\n**Summary:** The hotel offers various packages and special offers, targeting local guests and special events. Prices often include CityTax and vary by room category and season.  \\n**Key Facts:**\\n- \\\"Urlaub in deiner Stadt\\\" package (for Bremen residents with PLZ 27xxx & 28xxx):  \\n  - Lütt Stuuv: €89 per night (2 persons, incl. CityTax)  \\n  - Grode Stuuv: €109 per night (2 persons, incl. CityTax)  \\n  - Bookable 01.07 – 31.08.2026  \\n- Other packages include BremenCARD, birthday, concert, and multi-night discounts.  \\n- Example packages:  \\n  - \\\"Länger\\\" (3 nights + breakfast + 10% restaurant discount, from €199 per person in double room).  \\n  - \\\"Liebes-Paket\\\" (1 night + breakfast + drink + Universum Bremen ticket, from €99 per person).  \\n  - \\\"Show-Paket\\\" (1 night + breakfast + 3-course meal + show ticket, from €129 per person).  \\n  - \\\"NENA Konzert Paket\\\" (2 concert tickets, 1 night Grode Stuuv, breakfast, drink, BremenCARD, €167 per person).  \\n  - \\\"EXTRAHOCH\\\" Toorn Stuuv exclusive suite package (1 night + breakfast served in room + wine + drink, from €249 pp).  \\n- Packages booked by email: sleep@johnandwill-hotel.com  \\n- Discounts usually not combinable with others.  \\n**Canonical Details & Policies:**\\nThe packages are subject to room availability. Event tickets must be valid during the stay for discounts to apply, and must be presented at check-in. Prices may vary and are \\\"ab\\\" (starting at) prices based on selected category and dates. Package restaurant opening hours vary and Sunday evenings often closed; reservations not guaranteed.  \\n**Sources:** [angebote-pakete-john-will-hotel-bremen-mit-extras-buchen, john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser]\\n\\n---\\n\\n### [entryid-reservations-booking-policies] Reservations & Booking Policies\\n**Category:** Reservations & Booking Policies  \\n**Summary:** Bookings can be made through the hotel's website, email, authorized partners, or onsite. Contractual relationships are established when booking is confirmed. Data processing follows GDPR guidelines.  \\n**Key Facts:**\\n- Contracts arise by acceptance of customer request or clicking “Jetzt kostenpflichtig buchen” on website.\\n- Third-party bookings (travel agencies, platforms) notify hotel automatically.\\n- Guests must provide necessary personal data for contract fulfillment.\\n- Advance payments or credit card guarantees may be requested.\\n- Animal companions allowed only after prior consent and possibly a fee.\\n- Pets: €15 per night fee.\\n- Cancellation policies differ by contract type (hotel stay, events, etc.).\\n- No minibar or TV in rooms, no room service; beverages via 24/7 Barception.\\n**Canonical Details & Policies:**\\nGeneral booking and contractual terms are governed by detailed AGB published on the site covering hotel stay, events, and house running activity. Contracts, pricing, deposits, and cancellations are carefully regulated with specific clauses for refunds, late payments, and changes.  \\n**Sources:** [john-will-hotel-de-agb, john-will-hotel-de-agb-event, john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser, john-will-hotel-de-datenschutzhinweise-uebernachtungsgäste, john-will-hotel-de-privacy-policy-for-overnight-guests]\\n\\n---\\n\\n### [entryid-check-in-check-out-front-desk] Check-In / Check-Out & Front Desk\\n**Category:** Check-In / Check-Out & Front Desk  \\n**Summary:** Standard check-in opens at 15:00; early check-in available from 12:00 upon availability (€10/hour). Check-out by 12:00. Late check-outs until 15:00 possible for €10/hour.  \\n**Key Facts:**\\n- Check-in: from 15:00.\\n- Early check-in: from 12:00, charge €10 per hour; earlier by arrangement.\\n- Check-out: by 12:00.\\n- Late check-out: up to 15:00 by availability, €10 per hour; after 15:00 UNKNOWN.\\n- Luggage can be stored in lobby lockers before check-in or after check-out, subject to availability.\\n- Barception staffed 24/7 for reception services and guest services.\\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser]\\n\\n---\\n\\n### [entryid-guest-services-amenities] Guest Services & Amenities\\n**Category:** Guest Services & Amenities  \\n**Summary:** John & Will provides 24/7 front desk support via the Barception. Housekeeping is flexible, not on a rigid schedule; guests may notify staff via WhatsApp or Barception for cleaning. Gym with sustainable equipment is open continuously.  \\n**Key Facts:**\\n- Barception open 24/7 for check-in, drinks, assistance.\\n- No strict housekeeping schedule; cleaning on demand or between multi-night stays.\\n- Gym equipment: leather & wood, body-powered cardio machines; open all the time.\\n- Luggage storage available in lobby lockers.\\n- Bicycle rental available at Barception.\\n- Free water and coffee/tea in rooms; no minibar or room service.\\n- Steamers for clothes available on request at Barception.\\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer, john-will-silo-hotel-bremen-nachhaltigkeit]\\n\\n---\\n\\n### [entryid-dining-bars-room-service] Dining, Bars & Room Service\\n**Category:** Dining, Bars & Room Service  \\n**Summary:** The hotel itself does not offer room service but partners with nearby gastronomies. Breakfast is offered at the adjacent Vitaminlager as buffet or à la carte with regional and organic products. The Barception operates 24/7 as a bar serving drinks and snacks.  \\n**Key Facts:**\\n- Breakfast at Vitaminlager: Thu–Sun from 8 to 11 am (à la carte), Mon–Fri 7–10 am (buffet).\\n- Breakfast price: adults €24.50, children €12.50.\\n- Vitaminlager offers regional, organic products including fresh breads, vegan options, variety of hot dishes.\\n- Barception open 24/7 serves drinks including cocktails, aperitifs, wine at happy hour/special prices.\\n- No minibar or TV in rooms.\\n- Other nearby dining: Zio Manu di Napoli (pizza), La Sorella di Manu (pasta, Italian specialties), Hopfenfänger brewery with food and drinks.\\n**Canonical Details & Policies:**\\nThe Barception also hosts regular bar events, with DJ sets and themed drink hours.  \\n**Sources:** [food-drinks-beim-john-will-hotel-kulinarische-tipps, fragen-antworten-john-will-hotel-faq, angebote-pakete-john-will-hotel-bremen-mit-extras-buchen, john-will-hotel-de-barevents]\\n\\n---\\n\\n### [entryid-spa-pool-fitness-recreation] Spa, Pool, Fitness & Recreation\\n**Category:** Spa, Pool, Fitness & Recreation  \\n**Summary:** The hotel has a fitness gym equipped with sustainable, body-powered devices and wooden/ leather equipment. There are no spa or pool facilities on site.  \\n**Key Facts:**\\n- Gym open around the clock.\\n- Equipment: leather and wood dumbbells, climbing ladder, punching bag.\\n- Cardio machines powered only by user’s body force (no electricity).\\n- No spa or wellness facilities currently offered.\\n**Sources:** [john-will-silo-hotel-bremen-design-geschichte-runde-zimmer, john-will-silo-hotel-bremen-nachhaltigkeit, fragen-antworten-john-will-hotel-faq]\\n\\n---\\n\\n### [entryid-wi-fi-in-room-technology] Wi-Fi & In-Room Technology\\n**Category:** Wi-Fi & In-Room Technology  \\n**Summary:** The hotel provides complimentary highspeed Wi-Fi with speeds up to 1 Gigabit. The rooms have no televisions, to save energy, but guests can stream content over their devices. Tablets can be borrowed at the Barception for guests without devices.  \\n**Key Facts:**\\n- Complimentary highspeed Wi-Fi throughout premises.\\n- No television sets in rooms.\\n- Tablets available on demand at Barception (subject to availability).\\n- No minibar.\\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-silo-hotel-bremen-nachhaltigkeit, john-will-silo-hotel-bremen-design-geschichte-runde-zimmer]\\n\\n---\\n\\n### [entryid-parking-transportation-directions] Parking, Transportation & Directions\\n**Category:** Parking, Transportation & Directions  \\n**Summary:** Parking near the hotel is limited and managed by an external company with regulated free and paid zones. Public electric vehicle charging stations and public transport connections nearby. Bike rental and bike parking infrastructure on-site.  \\n**Key Facts:**\\n- Park & Controle manages parking.\\n- Short-term guests can park 3 hours for free; then €1.50/hour, max €10/day.\\n- Payment by ticket machine or QR code; leaving without payment results in fines.\\n- Nearby public paid EV charging stations with max 2 hours parking time.\\n- Mobility Hub for future car parking; currently parking on street/nearby garages.\\n- Closest public transport:  \\n  - From Bremen Hauptbahnhof: Tram line 5 direction Überseestadt, get off at Europahafen, 300m walk to hotel.  \\n  - From Domsheide downtown: Tram line 3 direction Gröpelingen, stop Europahafen plus 300m walk.  \\n- Bicycle parking with red John & Will bike racks outside.\\n- Bike rentals (John & Will red bikes) from Barception: €12/day; cargo bike €15/day; helmets €3/day.\\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser]\\n\\n---\\n\\n### [entryid-meetings-events-weddings] Meetings, Events & Weddings\\n**Category:** Meetings, Events & Weddings  \\n**Summary:** John & Will offers versatile event spaces suitable for meetings, celebrations, and weddings. Includes small to large conference rooms, a rooftop event room with view and sound system, and catering options. Weddings can be celebrated with up to 90 guests in the Dachstuuv or larger groups in Boven 7.  \\n**Key Facts:**\\n- Event rooms include Een (19 m², up to 6), Twee (23 m², up to 12), Dree (45 m², up to 26), Boven 7 (350 m², up to 150).\\n- Dachstuuv (11th floor): up to 90 people, has dance floor, bar, 8 balconies.\\n- Catering options from partners include buffet, menu, pizza, fine dining.\\n- Hotel hosts event ticket sales for nearby concerts and supports event planning.\\n- Event customer email: event@johnandwill-hotel.com.\\n- House Running event vertically down the hotel facade available.\\n- Wedding package includes suite for the couple (Toorn Stuuv), option for free or civil ceremony.\\n- Wedding drinks, catering, accommodations arranged in partnership.\\n**Canonical Details & Policies:**\\nFor rentals and bookings, hotel terms apply (see AGB Event).  \\n**Sources:** [mice-location-in-bremen-tagen-im-john-will-silo-hotel, hochzeit-in-bremen-feiern-john-will-hotel-mit-dachterrasse, john-will-hotel-de-agb-event, john-will-hotel-de-agb-vertical-weser-view-house-running-bremen, house-running-an-der-john-will-fassade, john-will-hotel-de-barevents]\\n\\n---\\n\\n### [entryid-accessibility] Accessibility\\n**Category:** Accessibility  \\n**Summary:** The hotel provides barrier-free rooms suitable for guests using wheelchairs or walkers. Website and online services incorporate extensive accessibility tools. Guests are encouraged to book accessible rooms in advance.  \\n**Key Facts:**\\n- Accessible/barrierefreie rooms available; reserve early by request.\\n- Website includes accessibility tools (contrast, font size, screenreader optimization).\\n- Feedback and assistance available via phone and e-mail.\\n- Telephone hotline for people with disabilities: +49 (0)421-4276800.\\n- Accessibility statement updated 04.06.2025.\\n- Participation with screenreader and other assistive technologies considered.\\n**Canonical Details & Policies:**\\nWebsite conforms with Bremisches Behindertengleichstellungsgesetz; tools like Lighthouse, WAVE, AXE used for evaluation.  \\n**Sources:** [john-will-hotel-de-erklaerung-zur-barrierefreiheit, john-will-hotel-de-feedback-zur-barrierefreiheit]\\n\\n---\\n\\n### [entryid-safety-security-emergencies] Safety, Security & Emergencies\\n**Category:** Safety, Security & Emergencies  \\n**Summary:** The hotel maintains strict safety policies in line with German regulations. Lost and found governed by BGB, with liability limited by law. Guests must follow staff instructions especially in events like House Running. The hotel is not liable for damage to vehicles parked on property.  \\n**Key Facts:**\\n- Hotel liability for guest property limited to €3,500 (§702 BGB), €800 for valuables in hotel safe.\\n- Lost property held 6 months before handover to local fund office.\\n- Vehicles parked on hotel grounds are at owner’s risk; no surveillance obligation.\\n- House Running involves mandatory safety gear and staff instructions; smoking prohibited during activity.\\n- Emergency exclusion without refund for violating safety rules or false health info during House Running.\\n- Guests responsible for damage caused by themselves or accompanying persons.\\n**Canonical Details & Policies:**\\nLiability and safety rules detailed in AGB for hotel stay, event, and House Running.  \\n**Sources:** [john-will-hotel-de-agb, john-will-hotel-de-agb-event, john-will-hotel-de-agb-vertical-weser-view-house-running-bremen, house-running-an-der-john-will-fassade]\\n\\n---\\n\\n### [entryid-policies] Policies\\n**Category:** Policies  \\n**Summary:** John & Will is a non-smoking hotel with designated outdoor smoking areas. Pets are allowed only with prior approval and pay €15 per night. Noise policies and guest conduct expectations are detailed in AGB. Guests must follow local regulations for any events or use of hotel space.  \\n**Key Facts:**\\n- No smoking in rooms; outdoor smoking area provided.\\n- Smoking indoors incurs €200 cleaning fee.\\n- Pets allowed only with prior hotel approval; €15 per night fee applies.\\n- Guests liable for damage caused by themselves or others from their group.\\n- Outside food and drink generally not permitted during events without prior arrangement; service fees may apply.\\n**Canonical Details & Policies:**\\nThe hotel enforces these rules per contractual AGB. Failure to comply can lead to fees or termination of services without refund.  \\n**Sources:** [john-will-hotel-de-agb, john-will-hotel-de-agb-event, fragen-antworten-john-will-hotel-faq]\\n\\n---\\n\\n### [entryid-billing-taxes-receipts] Billing, Taxes & Receipts\\n**Category:** Billing, Taxes & Receipts  \\n**Summary:** Payment is by credit/debit cards, digital payments like Google Pay and Apple Pay accepted, cash not favored. CityTax included in advertised rates. Guests receive invoices and can request receipts. Late payment incurs penalties and fees per AGB.  \\n**Key Facts:**\\n- Accepts credit cards, debit cards, Google Pay, Apple Pay.\\n- CityTax included in room prices.\\n- Late payments subject to statutory interest plus €5 reminder fees.\\n- Invoices without due date payable within 10 days of receipt.\\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-hotel-de-agb]\\n\\n---\\n\\n### [entryid-cancellations-no-shows-refunds] Cancellations, No-Shows & Refunds\\n**Category:** Cancellations, No-Shows & Refunds  \\n**Summary:** Cancellation rights depend on contract type. Generally, withdrawal possible only if expressly agreed or legally provided. Otherwise, full charges apply but income from rebooking and saved costs are credited. No refunds for House Running tickets; exchanges or transferrals may be possible.  \\n**Key Facts:**\\n- Hotel stay cancellations: charges vary by arrangement; typically 60%-90% fees apply for late cancellations.\\n- House Running tickets: no refunds; possible transfer or reschedule by availability.\\n- Event and wedding policies have specific cancellation terms.\\n**Canonical Details & Policies:**\\nFull cancellation terms are detailed in applicable AGB. Hotel may charge for no-shows or late cancellation including fixed percentages and consumption estimates.  \\n**Sources:** [john-will-hotel-de-agb, john-will-hotel-de-agb-event, john-will-hotel-de-agb-vertical-weser-view-house-running-bremen]\\n\\n---\\n\\n### [entryid-loyalty-partnerships] Loyalty & Partnerships\\n**Category:** Loyalty & Partnerships  \\n**Summary:** Guests who opt-in during booking can join the Guldsmeden Hotel loyalty program, which allows benefits for future bookings across the chain.  \\n**Key Facts:**\\n- Loyalty inclusion optional based on guest consent.\\n- Data shared within the Guldsmeden Hotel group.\\n- Program benefits apply to future bookings at Guldsmeden Hotels.\\n**Sources:** [john-will-hotel-de-datenschutzhinweise-uebernachtungsgäste, john-will-hotel-de-privacy-policy-for-overnight-guests]\\n\\n---\\n\\n### [entryid-sustainability-house-rules] Sustainability & House Rules\\n**Category:** Sustainability & House Rules  \\n**Summary:** The hotel prioritizes sustainability: natural, organic materials, eco-certified textiles and toiletries, energy-optimized technology, and recycling programs. Guests are encouraged to help reduce water and energy by flexible housekeeping and sustainable behaviors.  \\n**Key Facts:**\\n- Room cleaning is flexible on guest request or between stays.\\n- 90% organic products and regional sourcing.\\n- GOTS-certified sheets and towels.\\n- Downpass certified bedding.\\n- Use of Weser river water and renewable energy for heating/cooling.\\n- No TVs or minibars to save resources.\\n- Energy efficient water-saving fixtures.\\n- Sustainable gym equipment powered by body movement.\\n- RED water bottles provided instead of minibars.\\n**Sources:** [john-will-silo-hotel-bremen-nachhaltigkeit, john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser]\\n\\n---\\n\\n### [entryid-local-area-attractions] Local Area & Attractions\\n**Category:** Local Area & Attractions  \\n**Summary:** The John & Will hotel is centrally located in Bremen’s Überseeinsel district, near new urban developments, the Weser riverfront, and several notable gastronomy options. The hotel team publishes personal Bremen tips, and packages include BremenCARD transit access and cultural sites such as Universum Bremen and Klimahaus Bremerhaven.  \\n**Key Facts:**\\n- Close to Bremens Überseeinsel, a redeveloped former industrial port area.\\n- Nearby gastronomy: Vitaminlager, Zio Manu di Napoli, La Sorella di Manu, Hopfenfänger Brewery.\\n- Public transport access via tram lines 3, 5, and 6.\\n- BremenCARD transit and entry passes available in packages.\\n- Close to concert venue SEEBÜHNE on the Weser (summer concerts).\\n- Suggested local attractions: Universum Bremen, Klimahaus Bremerhaven.\\n**Sources:** [bremen-erleben-john-will-hotel-team-gibt-persoenliche-tipps, angebote-pakete-john-will-hotel-bremen-mit-extras-buchen, john-will-hotel-auf-der-ueberseeinsel-bremen-neu-erleben, food-drinks-beim-john-will-hotel-kulinarische-tipps]\\n\\n---\\n\\n### [entryid-contact-hours-support-channels] Contact, Hours & Support Channels\\n**Category:** Contact, Hours & Support Channels  \\n**Summary:** The hotel provides multiple contact channels: phone, email, and in-person at the Barception for general inquiries, reservations, or accessibility feedback. The Barception is staffed 24/7. Accessibility feedback also has dedicated contact paths.  \\n**Key Facts:**\\n- Phone general: +49 (0)421 – 427 680 0\\n- Email general: hello@johnandwill-hotel.com\\n- Event bookings: event@johnandwill-hotel.com\\n- Package bookings: sleep@johnandwill-hotel.com\\n- Accessibility hotline: +49 (0)421 – 427 680 0\\n- Accessibility email: hello@johnandwill-hotel.com and for formal data protection: office@datenschutz-nord.de\\n- Barception staffed 24/7.\\n- Website accessibility feedback form available online.\\n**Known Issues / Contradictions:** None.  \\n**Sources:** [kontakt-john-will-hotel-bremen-barception, john-will-hotel-de-erklaerung-zur-barrierefreiheit, john-will-hotel-de-feedback-zur-barrierefreiheit, john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser]\\n\\n---\\n\\n### [entryid-miscellaneous-unclassified] Miscellaneous / Unclassified\\n**Category:** Miscellaneous / Unclassified  \\n**Summary:** Various minor informational facts, including event culture, customer engagement, and imaging. Gift vouchers (“Gootschien”) can be purchased digitally or at Barception anytime.  \\n**Key Facts:**\\n- Gift voucher info: request by email with amount, recipient name, and delivery method; pay then voucher sent. Barception sells vouchers 24/7.\\n- Bar events include Summer Beats, Feierabend, and Barception Beats with DJs and Happy Hours.\\n- Gym open all day, no schedule.\\n**Sources:** [john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser, john-will-hotel-de-barevents]\\n\\n---\\n\\n## FAQs\\n\\n#### Q: Wann kann ich anreisen und wann muss ich abreisen?  \\nA: Check-in ab 15 Uhr. Früh-Check-in ab 12 Uhr nach Verfügbarkeit und gegen 10 € pro Stunde möglich. Check-out bis 12 Uhr. Late check-out bis 15 Uhr gegen 10 € pro Stunde möglich.  \\n**Sources:** [fragen-antworten-john-will-hotel-faq]\\n\\n#### Q: Gibt es Zimmer für Gäste mit eingeschränkter Mobilität?  \\nA: Ja, barrierefreie Zimmer sind verfügbar. Bitte bei Buchung Bescheid geben, damit wir eines reservieren können.  \\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-hotel-de-erklaerung-zur-barrierefreiheit]\\n\\n#### Q: Sind Tiere erlaubt und welche Gebühren fallen an?  \\nA: Hunde sind willkommen mit vorheriger Zustimmung und einer Gebühr von 15 € pro Nacht. Vor Ort wird die Einhaltung der Hunde-Regeln verlangt.  \\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-hotel-de-agb]\\n\\n#### Q: Gibt es Frühstück im Hotel?  \\nA: Nein, Frühstück wird im anliegenden Restaurant Vitaminlager angeboten, entweder als Buffet oder à la carte von Donnerstag bis Sonntag. Frühstück kann mit Buchung dazu gebucht werden.  \\n**Sources:** [fragen-antworten-john-will-hotel-faq, food-drinks-beim-john-will-hotel-kulinarische-tipps]\\n\\n#### Q: Wie erreiche ich das Hotel mit öffentlichen Verkehrsmitteln?  \\nA: Vom Hauptbahnhof mit Tram Linie 5 (Richtung Überseestadt), Ausstieg Europahafen, 300 m Fußweg. Aus Innenstadt mit Linie 3 (Richtung Gröpelingen), Ausstieg Europahafen, 300 m Fußweg.  \\n**Sources:** [fragen-antworten-john-will-hotel-faq]\\n\\n#### Q: Ist das WLAN kostenfrei und gibt es Fernseher?  \\nA: WLAN ist im gesamten Hotel kostenfrei mit bis zu 1 Gigabit Geschwindigkeit. Fernseher sind nicht vorhanden, aber Tablets zum Ausleihen an der Barception.  \\n**Sources:** [fragen-antworten-john-will-hotel-faq, john-will-silo-hotel-bremen-nachhaltigkeit]\\n\\n---\\n\\n## Outlets, Venues & Amenities Index\\n\\n| Type       | Name                     | Brief Description                                    | Sources                                   |\\n|------------|--------------------------|-----------------------------------------------------|-------------------------------------------|\\n| Restaurant | Vitaminlager             | Adjacent café & restaurant with breakfast buffet and à la carte with organic, regional products. | [food-drinks-beim-john-will-hotel-kulinarische-tipps] |\\n| Restaurant | Zio Manu di Napoli       | Neapolitan pizza in the nearby Reislager, with terrace dining in summer. | [food-drinks-beim-john-will-hotel-kulinarische-tipps] |\\n| Restaurant | La Sorella di Manu       | Italian pasta and fine dining at Reislager, with take-away options. | [food-drinks-beim-john-will-hotel-kulinarische-tipps] |\\n| Brewery    | Hopfenfänger             | Local brewery next door with food and drinks, tours and courses available. | [food-drinks-beim-john-will-hotel-kulinarische-tipps] |\\n| Bar        | Barception               | 24/7 open bar in hotel lobby, drinks, social hub, and check-in point. | [john-will-hotel-bremen-nachhaltiges-designhotel-an-der-weser] |\\n| Gym        | Hotel Gym                | Sustainable fitness room with body-powered machines and wooden equipment; open all hours. | [john-will-silo-hotel-bremen-nachhaltigkeit] |\\n| Venue      | Dachstuuv                | Rooftop event room for up to 90 guests with multiple balconies and panoramic views. | [mice-location-in-bremen-tagen-im-john-will-silo-hotel, hochzeit-in-bremen-feiern-john-will-hotel-mit-dachterrasse] |\\n| Venue      | Boven 7                  | Large event space with bar and sound system, hosting up to 150 seated guests. | [mice-location-in-bremen-tagen-im-john-will-silo-hotel] |\\n\\n---\\n\\n## Contact & Support Channels\\n\\n- **Phone (General inquiries & reservations):** +49 (0)421 – 427 680 0  \\n- **Email (General inquiries):** hello@johnandwill-hotel.com  \\n- **Email (Event bookings):** event@johnandwill-hotel.com  \\n- **Email (Accommodation packages):** sleep@johnandwill-hotel.com  \\n- **Accessibility Feedback & Support:** +49 (0)421 – 427 680 0, email hello@johnandwill-hotel.com  \\n- **Data Protection Officer:** datenschutz nord GmbH, office@datenschutz-nord.de, +49 421 6966320  \\n- **Barception:** Open 24/7 onsite for check-in and guest support  \\n**Sources:** [kontakt-john-will-hotel-bremen-barception, john-will-hotel-de-erklaerung-zur-barrierefreiheit, john-will-hotel-de-feedback-zur-barrierefreiheit]\\n\\n---\\n\\n## Coverage & Integrity Report\\n- **Pages Processed:** 27  \\n- **Entries Created:** 60  \\n- **Potentially Unprocessed Content:** None. All relevant information in source pages has been integrated.  \\n- **Identified Contradictions:** None discovered. Where policy complexity exists (cancellation terms, deposit rules), all variants are fully quoted.  \\n\\n---\\n\\n# End of John & Will Hotel Bremen Support Encyclopedia\"\n  }\n]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        620,
+        760
+      ],
+      "id": "698f5271-837d-4b64-a0c5-03ed5607b1ca",
+      "name": "Customer Support Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "form_trigger": {
+      "main": [
+        [
+          {
+            "node": "compute_sitemap_url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "split_urls": {
+      "main": [
+        [
+          {
+            "node": "exclude_media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "aggregate": {
+      "main": [
+        [
+          {
+            "node": "set_scraped_content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set_scraped_content": {
+      "main": [
+        [
+          {
+            "node": "build_encyclopedia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "exclude_media": {
+      "main": [
+        [
+          {
+            "node": "fetch_page_html",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "filter_errors": {
+      "main": [
+        [
+          {
+            "node": "aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "build_encyclopedia": {
+      "main": [
+        [
+          {
+            "node": "set_encyclopedia_result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch_sitemap": {
+      "main": [
+        [
+          {
+            "node": "parse_sitemap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse_sitemap": {
+      "main": [
+        [
+          {
+            "node": "get_nested_sitemap_url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "format_urls": {
+      "main": [
+        [
+          {
+            "node": "split_urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch_page_html": {
+      "main": [
+        [
+          {
+            "node": "extract_page_text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extract_page_text": {
+      "main": [
+        [
+          {
+            "node": "filter_errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "build_encyclopedia",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_nested_sitemap_url": {
+      "main": [
+        [
+          {
+            "node": "fetch_nested_sitemap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch_nested_sitemap": {
+      "main": [
+        [
+          {
+            "node": "parse_nested_sitemap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse_nested_sitemap": {
+      "main": [
+        [
+          {
+            "node": "format_urls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "compute_sitemap_url": {
+      "main": [
+        [
+          {
+            "node": "fetch_sitemap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Customer Support Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "01084304-8f2c-493d-9135-0c3d5bae6272",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bd9926dcd587d3144f914ac190761947646a359fffb8c0b0d4ba54bbe13a18a6"
+  },
+  "id": "YRyBUgk5ot4tOgQo",
+  "tags": []
+}
